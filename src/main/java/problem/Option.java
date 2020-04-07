@@ -1,10 +1,11 @@
-package problem.model;
+package problem;
 
 import java.lang.IllegalArgumentException;
 
 import java.util.List;
+import java.util.Map;
 
-public class Option {
+public class Option implements IOption{
     private String name;
     private String shortName;
     private Boolean required;
@@ -12,9 +13,9 @@ public class Option {
     private Boolean exists;
 
     private String value;
-    private List<Option> requiredOptions;
+    private List<String> requiredOptions;
 
-    public Option(String name, String shortName, Boolean required, Boolean hasArg, List<Option> requiredOptions) {
+    public Option(String name, String shortName, Boolean required, Boolean hasArg, List<String> requiredOptions) {
         this.name = name;
         this.shortName = shortName;
         this.required = required;
@@ -22,7 +23,7 @@ public class Option {
         this.requiredOptions = requiredOptions;
     }
 
-    public boolean match(String[] args) {
+    public boolean match(String[] args) throws IllegalArgumentException {
         for (int i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (this.name.equals(arg) || this.shortName.equals(arg)) {
@@ -39,23 +40,19 @@ public class Option {
         return false;
     }
 
-    public boolean checkRequiredOptions() {
-        for (Option opt: requiredOptions) {
-            if (!opt.exists)
-                return false;
+    public void checkRequiredOptions(Map<String, IOption> optionMap) throws IllegalArgumentException {
+        for (String opt: requiredOptions) {
+            if (!optionMap.get(opt).getExist())
+                throw new IllegalArgumentException("Option %d requires some other options".format(this.name));
         }
-        return true;
-    }
-
-    public boolean addRequiredOption(Option opt) {
-        if (requiredOptions.contains(opt))
-            return false;
-        requiredOptions.add(opt);
-        return true;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getShortName() {
+        return shortName;
     }
 
     public boolean getExist() {
